@@ -1,0 +1,25 @@
+---
+
+- hosts: all
+  become: true
+  become_user: root
+  tasks:
+  - name: Starting tcpdump and Capturing Traffic
+    shell: tcpdump -c 10 -W 1 -i enp0s3 -w MyPCAP.pcap
+
+  - name: Compressing the capture file
+    community.general.archive:
+      path: MyPCAP.pcap
+      dest: /tmp/MyPCAP.gz
+      format: gz
+
+  - name: Changing the file permission
+    ansible.builtin.file:
+      path: /tmp/MyPCAP.gz
+      mode: 0755
+
+  - name: Copying the PCAP to Manage Node
+    fetch:
+      src: /tmp/MyPCAP.gz
+      dest: /tmp/HOA8.1/
+      flat: yes
